@@ -27,3 +27,15 @@ export const sessionTable = sqliteTable("session", {
 		.references(() => userTable.id),
 	expiresAt: integer("expires_at").notNull()
 });
+
+export const oauthAccountTable = sqliteTable("oauth_account", {
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+  userId: text("user_id")
+    .notNull()
+    .references(() => userTable.id),
+  provider: text("provider").notNull(), // google, github
+  providerUserId: text("provider_user_id").notNull(),
+  accessToken: text("access_token").notNull(),
+  refreshToken: text("refresh_token"),
+  expiresAt: integer("expires_at").notNull()
+})

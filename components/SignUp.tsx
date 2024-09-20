@@ -11,7 +11,7 @@ import {
   verifyOTPAndResetAccount,
 } from "@/app/(pages)/sign-up/action";
 import { Button } from "@/components/ui/button";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 
 import { SignUpSchema, OtpSchema } from "@/lib/types";
 import {
@@ -22,6 +22,7 @@ import {
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { createGoogleAuthorizationURL } from "@/actions/oauth.action";
 
 type formScreens = "signUpForm" | "verifySignupOTP" | "resetOTP" | "resetScreen";
 
@@ -149,6 +150,17 @@ export function SignUpForm() {
         setTimeout(() => setMessage(""), 5000);
     }
 
+    async function handleGoogleSignUp() {
+      const res = await createGoogleAuthorizationURL();
+      if (!res.success || !res.data) {
+        setMessage(res.error || "An error occurred");
+        setTimeout(() => setMessage(""), 5000);
+        return;
+      }
+      return router.push(res.data);
+      
+    }
+
   return (
     <Card>
       <CardHeader>
@@ -172,6 +184,7 @@ export function SignUpForm() {
         )}
 
         {formState === "signUpForm" && (
+          <div>
           <form
             onSubmit={signUpForm.handleSubmit(onSignUpSubmit)}
             className="space-y-4"
@@ -198,6 +211,15 @@ export function SignUpForm() {
               Sign up
             </Button>
           </form>
+          <Button
+              onClick={handleGoogleSignUp}
+              className="w-full mb-4"
+              variant="outline"
+            >
+              Sign up with Google
+            </Button>
+          </div>
+
         )}
 
         {(formState === "verifySignupOTP") && (

@@ -66,9 +66,7 @@ export const signIn = async (values: z.infer<typeof SignInSchema>): Promise<Acti
     };
   }
 
-  const session = await lucia.createSession(existingUser.id, {
-    expiresIn: 60 * 60 * 24 * 30, // 30 days
-  });
+  const session = await lucia.createSession(existingUser.id, {});
 
   const sessionCookie = lucia.createSessionCookie(session.id);
 
@@ -80,10 +78,13 @@ export const signIn = async (values: z.infer<typeof SignInSchema>): Promise<Acti
   };
 };
 
-export const requestPasswordReset = async (userId: string): Promise<ActionResponse> => {
+export const requestPasswordReset = async (email: string): Promise<ActionResponse> => {
+  if (!email) {
+    return { success: false, message: "Email is required." };
+  }
   try {
     const user = await db.query.userTable.findFirst({
-      where: (table) => eq(table.id, userId),
+      where: (table) => eq(table.email, email),
     });
 
     // Return a generic message to prevent user enumeration
@@ -141,10 +142,10 @@ export const requestPasswordReset = async (userId: string): Promise<ActionRespon
   }
 };
 
-export const verifyOTPAndResetPassword = async (userId: string, otp: string, newPassword: string): Promise<ActionResponse> => {
+export const verifyOTPAndResetPassword = async (email: string, otp: string, newPassword: string): Promise<ActionResponse> => {
   try {
     const user = await db.query.userTable.findFirst({
-      where: (table) => eq(table.id, userId),
+      where: (table) => eq(table.email, email),
     });
 
     if (!user) {

@@ -30,6 +30,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { createGoogleAuthorizationURL } from "@/actions/oauth.action";
 
 type FormScreens = "signInForm" | "forgotPassword" | "verifyOTP" | "resetPassword";
 
@@ -144,6 +145,16 @@ export function SignInForm() {
     setTimeout(() => setMessage(""), 5000);
   }
 
+  async function handleGoogleSignUp() {
+    const res = await createGoogleAuthorizationURL();
+    if (!res.success || !res.data) {
+      setMessage(res.error || "An error occurred");
+      setTimeout(() => setMessage(""), 5000);
+      return;
+    }
+    return router.push(res.data);    
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -167,34 +178,44 @@ export function SignInForm() {
         )}
 
         {formState === "signInForm" && (
-          <form
-            onSubmit={signInForm.handleSubmit(onSignInSubmit)}
-            className="space-y-4"
-          >
-            <input
-              className="w-full border p-2 rounded"
-              type="email"
-              placeholder="Email"
-              {...signInForm.register("email")}
-            />
-            <input
-              className="w-full border p-2 rounded"
-              type="password"
-              placeholder="Password"
-              {...signInForm.register("password")}
-            />
-            <Button type="submit" className="w-full">
-              Sign In
+          <div>
+            <form
+              onSubmit={signInForm.handleSubmit(onSignInSubmit)}
+              className="space-y-4"
+            >
+              <input
+                className="w-full border p-2 rounded"
+                type="email"
+                placeholder="Email"
+                {...signInForm.register("email")}
+              />
+              <input
+                className="w-full border p-2 rounded"
+                type="password"
+                placeholder="Password"
+                {...signInForm.register("password")}
+              />
+              <Button type="submit" className="w-full">
+                Sign In
+              </Button>
+            </form>
+            <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => setFormState("forgotPassword")}
+              >
+                Forgot Password?
             </Button>
             <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => setFormState("forgotPassword")}
-            >
-              Forgot Password?
-            </Button>
-          </form>
+          onClick={handleGoogleSignUp}
+          variant={"outline"}
+          className="w-full"
+        >
+          Sign in with Google
+        </Button>
+          </div>
+
         )}
 
         {formState === "forgotPassword" && (

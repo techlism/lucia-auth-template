@@ -88,6 +88,7 @@ export const signUp = async (values: z.infer<typeof SignUpSchema>): Promise<Acti
                 id: userId,
                 email: values.email,
                 hashedPassword,
+                provider: "email",
             }).returning({
                 id: userTable.id,
             })
@@ -206,6 +207,10 @@ export async function verifyOTPAndResetAccount(userId: string, otp: string): Pro
 
         if (!user) {
             return { success: false, message: "User not found" }
+        }
+
+        if(user.isEmailVerified === true){
+            return { success: false, message: "Email already verified, you may reset your password using Forgot Password." }
         }
 
         const verificationEntry = await db.query.emailVerificationTable.findFirst({

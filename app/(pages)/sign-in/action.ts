@@ -20,6 +20,11 @@ type ActionResponse = {
   data?: Record<string, string>;
 };
 
+/**
+ * @param: SignInSchema
+ * @returns: success: false if not an existing user, incorrect password, or email not verified
+*/
+
 export const signIn = async (values: z.infer<typeof SignInSchema>): Promise<ActionResponse> => {
   try {
     SignInSchema.parse(values);
@@ -77,6 +82,11 @@ export const signIn = async (values: z.infer<typeof SignInSchema>): Promise<Acti
     message: "Logged in successfully",
   };
 };
+
+/**
+ * @param: email
+ * @returns: success: true if an account with that email exists, false if email not found
+*/
 
 export const requestPasswordReset = async (email: string): Promise<ActionResponse> => {
   if (!email) {
@@ -141,6 +151,13 @@ export const requestPasswordReset = async (email: string): Promise<ActionRespons
     return { success: false, message: "An error occurred while requesting password reset." };
   }
 };
+
+/**
+ * @param: email
+ * @param: otp
+ * @param: newPassword
+ * @returns: success: true if password reset successfully, false if no verification entry, invalid OTP, or expired OTP
+*/
 
 export const verifyOTPAndResetPassword = async (email: string, otp: string, newPassword: string): Promise<ActionResponse> => {
   try {

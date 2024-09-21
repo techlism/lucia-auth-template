@@ -1,7 +1,9 @@
 import { validateRequest } from "@/lib/lucia";
+import SignOutButton from '../../components/SignOut';
 
 export default async function Home() {
   const { user } = await validateRequest();
+
   if (user) {
     return (
       <div className="grid grid-cols-1 items-center p-4 border rounded-md gap-4 mx-auto max-w-96 min-h-screen">
@@ -9,9 +11,7 @@ export default async function Home() {
         <p>
           {user.id}        
         </p>
-        <a href="/sign-out" className="p-4 border rounded-lg">
-          Sign-out
-        </a>
+        <SignOutButton/>
       </div>
     )
   }

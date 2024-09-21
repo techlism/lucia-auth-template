@@ -109,7 +109,7 @@ export function SignUpForm() {
     setMessage(res.message);
     if (res.success) {
       if (formState === "verifySignupOTP") {
-        setTimeout(() => router.push("/"), 2000);
+        setTimeout(() => router.push("/dashboard"), 2000);
       } else {
         setTimeout(() => {
           setFormState("signUpForm");

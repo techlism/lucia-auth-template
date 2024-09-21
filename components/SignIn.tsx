@@ -99,7 +99,7 @@ export function SignInForm() {
       setTimeout(() => setMessage(""), 5000);
       return;
     }
-    router.push("/");
+    router.push("/dashboard");
   }
 
   async function onForgotPasswordSubmit(values: { email: string }) {

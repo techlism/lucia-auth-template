@@ -1,6 +1,6 @@
 "use server"
 import type { z } from "zod"
-import type { SignUpSchema } from "@/lib/types"
+import { SignUpSchema } from "@/lib/types"
 import db from "@/lib/database/client"
 import { emailVerificationTable, sessionTable, userTable } from "@/lib/database/schema"
 import { eq } from "drizzle-orm"
@@ -20,6 +20,12 @@ type ActionResponse = {
 const generateOTP = () => {
     return Math.floor(100000 + Math.random() * 900000).toString();
 }
+
+/**
+ * 
+ * @param userId : string
+ * @returns sucess: false if user not found, verification entry not found, email already verified or new OTP is requested within 1 minute
+ */
 
 export const resendVerificationEmail = async (userId: string): Promise<ActionResponse> => {
     try {
@@ -77,7 +83,22 @@ export const resendVerificationEmail = async (userId: string): Promise<ActionRes
     }
 }
 
+/**
+ * 
+ * @param values : SignUpSchema
+ * @returns success: false if user already exists. In case of success: true, an email with OTP will be sent to the user and returns the userId as data
+ */
+
 export const signUp = async (values: z.infer<typeof SignUpSchema>): Promise<ActionResponse> => {
+    try {
+        SignUpSchema.parse(values);
+      // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+      } catch (error: any) {
+        return {
+          success: false,
+          message: error?.message,
+        };
+    }
     try {
         const hashedPassword = await argon2.hash(values.password)
         const userId = crypto.randomUUID();
@@ -129,6 +150,12 @@ export const signUp = async (values: z.infer<typeof SignUpSchema>): Promise<Acti
         return { success: false, message: "An error occurred during the sign-up process" }
     }
 }
+/**
+ * 
+ * @param userId 
+ * @param otp 
+ * @returns sucess : false if user not found, verification entry not found, invalid OTP, OTP has expired
+ */
 
 export const verifyOTPForSignup = async (userId: string, otp: string): Promise<ActionResponse> => {
     try {
@@ -195,6 +222,12 @@ async function userExistsWithoutEmailVerified(email: string): Promise<boolean> {
     return existingUser?.isEmailVerified === false
 }
 
+/** 
+ * @param userId
+ * @param otp
+ * @returns success: false if user not found, email already verified, verification entry not found, invalid OTP, OTP has expired
+*/
+
 export async function verifyOTPAndResetAccount(userId: string, otp: string): Promise<ActionResponse> {
     if (!userId || !otp) {
         return { success: false, message: "Invalid request. User ID and OTP are required." }
@@ -248,6 +281,11 @@ export async function verifyOTPAndResetAccount(userId: string, otp: string): Pro
         return { success: false, message: "An error occurred while resetting the account" }
     }
 }
+
+/**
+ *  @param userId
+ *  @returns success: false if user not found, email already verified. In case of success: true, an email with OTP will be sent to the user and returns the userId as data
+ */
 
 export async function initiateAccountReset(userId: string): Promise<ActionResponse> {
     if (!userId) {
